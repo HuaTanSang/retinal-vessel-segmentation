@@ -45,6 +45,12 @@ class TAOD_CFNet(nn.Module):
             nn.Conv2d(512, 256, kernel_size=1)
         )
 
+        self.cfb1_1 = CFB(1024, 512)
+        self.up2 = nn.Sequential(
+            nn.Upsample(scale_factor=2, mode='nearest', align_corners=False),
+            nn.Conv2d(512, 256, kernel_size=1)
+        )
+
         self.cfb1_2 = CFB(512, 256)
         self.up3 = nn.Sequential(
             nn.Upsample(scale_factor=2, mode='nearest', align_corners=False),
