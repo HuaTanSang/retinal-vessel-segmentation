@@ -35,31 +35,31 @@ class TAOD_CFNet(nn.Module):
         # Decoder: Cat the TAM before conduct the CFB
         self.cfb1_0 = CFB(1024, 1024)
         self.up1 = nn.Sequential(
-            nn.Upsample(scale_factor=2, mode='nearest', align_corners=False),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
             nn.Conv2d(1024, 512, kernel_size=1)
         )
 
         self.cfb1_1 = CFB(1024, 512)
         self.up2 = nn.Sequential(
-            nn.Upsample(scale_factor=2, mode='nearest', align_corners=False),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
             nn.Conv2d(512, 256, kernel_size=1)
         )
 
         self.cfb1_1 = CFB(1024, 512)
         self.up2 = nn.Sequential(
-            nn.Upsample(scale_factor=2, mode='nearest', align_corners=False),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
             nn.Conv2d(512, 256, kernel_size=1)
         )
 
         self.cfb1_2 = CFB(512, 256)
         self.up3 = nn.Sequential(
-            nn.Upsample(scale_factor=2, mode='nearest', align_corners=False),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
             nn.Conv2d(256, 128, kernel_size=1)
         )
 
         self.cfb1_3 = CFB(256, 128)
         self.up4 = nn.Sequential(
-            nn.Upsample(scale_factor=2, mode='nearest', align_corners=False),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
             nn.Conv2d(128, 64, kernel_size=1)
         )
 

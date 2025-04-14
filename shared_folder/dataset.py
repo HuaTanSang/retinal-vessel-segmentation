@@ -12,18 +12,19 @@ class HRF_Dataset(Dataset):
             glob.glob(os.path.join(self.root_folder, 'images/**.jpg')) +
             glob.glob(os.path.join(self.root_folder, 'images/**.JPG'))
         )
-        self.masks = sorted(glob.glob(self.root_folder + 'manual1/**.tif'))
+        self.masks = sorted(
+            glob.glob(os.path.join(root_folder, 'manual1/**.tif'))
+        )
 
-        assert len(self.images == self.images), "Number of mask and image mis-match!"
+        assert len(self.images) == len(self.masks), "Number of mask and image mis-match!"
 
         self.transforms_img = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Resize((256,256))
+            transforms.Resize((16,16))
         ])
-
         self.transforms_masks = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Resize((256,256),interpolation=transforms.InterpolationMode.NEAREST)
+            transforms.Resize((16,16),interpolation=transforms.InterpolationMode.NEAREST)
         ])
 
     def __len__(self): 

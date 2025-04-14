@@ -3,17 +3,20 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from shared_folder.compute_score import *
 from shared_folder.loss import *
 from cfnet_model import TAOD_CFNet
-
+from shared_folder.utils import * 
 from shared_folder.dataset import HRF_Dataset
+
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 from shutil import copyfile
 
 import os
-import random
 import torch
 import torch.nn as nn
+
+import torch
+torch.cuda.empty_cache()
 
 def train_model(epoch: int, model: nn.Module, dataloader: DataLoader, optim: torch.optim.Optimizer, device: torch.device):
     model.train()
@@ -67,14 +70,7 @@ def save_checkpoint(dict_to_save: dict, checkpoint_dir: str):
     os.makedirs(checkpoint_dir, exist_ok=True)
     torch.save(dict_to_save, os.path.join(checkpoint_dir, "last_model.pth"))
 
-def set_seed(seed=33):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+
 
 def main(folder_dir, checkpoint_dir):
     set_seed(33)
@@ -86,8 +82,8 @@ def main(folder_dir, checkpoint_dir):
     train_dataset = torch.utils.data.Subset(data, train_indices)
     val_dataset = torch.utils.data.Subset(data, val_indices)
     
-    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
-    eval_loader = DataLoader(val_dataset, batch_size=4, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=3, shuffle=True)
+    eval_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
@@ -97,7 +93,7 @@ def main(folder_dir, checkpoint_dir):
     optimizer = AdamW(model.parameters(), lr=2e-3)
     scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=5)
 
-    print("OK")
+
     epoch = 0
     allowed_patience = 5
     best_score = 0
@@ -139,11 +135,10 @@ def main(folder_dir, checkpoint_dir):
                 os.path.join(checkpoint_dir, "best_model.pth")
             )
         
-        print("OK")
         epoch += 1
     
 if __name__ == "__main__":
     main(
-        folder_dir='/home/huatansang/Documents/preparation-for-research/brain-tumor-segmentation/Brain-Tumor-Segmentation-Dataset',
-        checkpoint_dir='/home/huatansang/Documents/preparation-for-research/TAOD-CFB/checkpoint'
+        folder_dir='/home/huatansang/Documents/retinal-vessel-segmentation/Dataset/hrf',
+        checkpoint_dir='/home/huatansang/Documents/retinal-vessel-segmentation/taod_cfnet/checkpoint'
     )
