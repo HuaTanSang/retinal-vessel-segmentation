@@ -1,6 +1,7 @@
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from shared_folder.utils import *
+from shared_folder.compute_score import *
+from shared_folder.loss import *
 from cfnet_model import TAOD_CFNet
 
 from shared_folder.dataset import HRF_Dataset
