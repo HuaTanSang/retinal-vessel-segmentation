@@ -12,27 +12,25 @@ def compute_iou(pred_mask, true_mask):
     iou = intersection / union if union != 0 else 0
     return iou
 
-def f1_score(pred_mask, true_mask):
-    f1 = 0.0
 
-    for pred, true in pred_mask, true_mask:
-        TP = ((pred == true) & (true == 1)).sum()
-        FP = ((pred != true) & (true == 1)).sum()
-        FN = ((pred != true) & (true == 0)).sum()
+def compute_f1(pred_mask, true_mask):
+    tp = ((pred_mask == true_mask) & (true_mask == 1)).sum()
+    fp = ((pred_mask != true_mask) & (true_mask == 1)).sum()
+    fn = ((pred_mask != true_mask) & (true_mask == 0)).sum()
 
-        pre = TP/(TP+FP)
-        recall = TP/(TP+FN)
-
-        f1 += (2 * pre * recall) / (pre + recall)
-        
-    return f1 / len(pred_mask) 
+    pre = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    
+    return (2 * pre * recall) / (pre + recall)
 
 
 def compute_scores(predicted_masks: list, masks: list) -> dict:
     metrics = {
         "iou": compute_iou,
-        "dice": compute_dice
+        "dice": compute_dice,
+        "f1" : compute_f1
     }
+
     scores = {metric_name: [] for metric_name in metrics}
 
     for predicted_mask, mask in zip(predicted_masks, masks):  
