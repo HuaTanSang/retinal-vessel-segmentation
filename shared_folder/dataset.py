@@ -20,11 +20,11 @@ class HRF_Dataset(Dataset):
 
         self.transforms_img = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Resize((16,16))
+            transforms.Resize((224, 224))
         ])
         self.transforms_masks = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Resize((16,16),interpolation=transforms.InterpolationMode.NEAREST)
+            transforms.Resize((224, 224),interpolation=transforms.InterpolationMode.NEAREST)
         ])
 
     def __len__(self): 

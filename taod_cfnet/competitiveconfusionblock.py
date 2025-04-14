@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from helper_function import compute_partial  # Giả sử bạn có hàm này
+from helper_function import compute_partial 
 
 class VGGBlock(nn.Module): 
     def __init__(self, in_channels, out_channels):
