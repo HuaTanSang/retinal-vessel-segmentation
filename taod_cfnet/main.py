@@ -1,9 +1,9 @@
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from utils import *
+from shared_folder.utils import *
 from cfnet_model import TAOD_CFNet
 
-from dataset import BrainTumorDataset
+from shared_folder.dataset import HRF_Dataset
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
@@ -79,7 +79,7 @@ def main(folder_dir, checkpoint_dir):
     set_seed(33)
     
     # Load data
-    data = BrainTumorDataset(folder_dir)
+    data = HRF_Dataset(folder_dir)
     train_indices, val_indices = train_test_split(range(len(data)), test_size=0.3, random_state=42)
     
     train_dataset = torch.utils.data.Subset(data, train_indices)
