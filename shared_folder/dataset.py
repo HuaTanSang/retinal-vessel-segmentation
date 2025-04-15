@@ -16,7 +16,7 @@ class HRF_Dataset(Dataset):
             glob.glob(os.path.join(root_folder, 'manual1/**.tif'))
         )
 
-        assert len(self.images) == len(self.masks), "Number of mask and image mis-match!"
+        assert len(self.images) == len(self.masks), "Number of masks and images mis-match!"
 
         self.transforms_img = transforms.Compose([
             transforms.ToTensor(),
