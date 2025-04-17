@@ -1,4 +1,5 @@
 import torch 
+import einops 
 
 def compute_partial(M):
     """
@@ -43,3 +44,17 @@ def compute_eqs2(Light):
     eqs2 = weighted.sum(dim=(2, 3)) 
     eqs2 = eqs2.view(B, C, 1, 1)  
     return eqs2
+
+
+def tuple_partitions(image: torch.Tensor, mask: torch.Tensor): 
+    image_patchs = einops.rearrange(image, 'b c (h ph) (w pw) -> b (h w) c ph pw', ph=146, pw=219)
+    mask_patchs  = einops.rearrange(mask,  'b c (h ph) (w pw) -> b (h w) c ph pw', ph=146, pw=219)
+    return image_patchs, mask_patchs 
+
+
+def tuple_unpartitions(image_patches: torch.Tensor, mask_patches: torch.Tensor, height: int, width: int):
+    image = einops.rearrange(image_patches, 'b (h w) c ph pw -> b c (h ph) (w pw)', h=height, w=width)
+    mask = einops.rearrange(mask_patches, 'b (h w) c ph pw -> b c (h ph) (w pw)', h=height, w=width)
+
+    return image, mask
+    

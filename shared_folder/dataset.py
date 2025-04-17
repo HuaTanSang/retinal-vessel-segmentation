@@ -1,10 +1,8 @@
-from torch.utils.data import Dataset
+import cv2 
 import os
-from torchvision import transforms
-from PIL import Image
 import glob
 import torchvision.transforms.functional as TF
-import cv2 
+from torch.utils.data import Dataset
 
 class HRF_Dataset(Dataset):
     def __init__(self, root_folder):
@@ -30,7 +28,6 @@ class HRF_Dataset(Dataset):
 
         image = TF.to_tensor(image)  
         image = image.repeat(3, 1, 1)
-
         mask = TF.to_tensor(mask)
 
         return {

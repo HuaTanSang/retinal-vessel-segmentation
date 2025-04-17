@@ -5,6 +5,7 @@ from shared_folder.loss import *
 from cfnet_model import TAOD_CFNet
 from shared_folder.utils import * 
 from shared_folder.dataset import HRF_Dataset
+from helper_function import * 
 
 from tqdm import tqdm
 from torch.utils.data import DataLoader
@@ -18,16 +19,17 @@ import torch.nn as nn
 import torch
 torch.cuda.empty_cache()
 
-def train_model(epoch: int, model: nn.Module, dataloader: DataLoader, optim: torch.optim.Optimizer, device: torch.device):
+def train_model(epoch: int, model: nn.Module, dataloader: DataLoader, optim: torch.optim.Optimizer, device: torch.device, criterion: nn.BCEWithLogitsLoss):
     model.train()
     running_loss = .0
     with tqdm(desc=f'Epoch {epoch} - Training', unit='it', total=len(dataloader)) as pb:
         for it, batch in enumerate(dataloader):
-            image = batch['image'].to(device)
-            mask = batch['mask'].to(device)
+            images, masks = tuple_partitions(batch['image'], batch['mask'])
+            images = images.to(device)
+            masks = masks.to(device)
             
-            masked = model(image)
-            loss = dice_loss(masked, mask)
+            masked = model(images)
+            loss = criterion(masked, masks)
             
             # Back propagation
             optim.zero_grad()
@@ -48,18 +50,20 @@ def evaluate_model(epoch: int, model: nn.Module, dataloader: DataLoader, device:
     
     with tqdm(desc=f'Epoch {epoch} - Evaluating', unit='it', total=len(dataloader)) as pb:
         for batch in dataloader:
-            image = batch['image'].to(device)
-            mask = batch['mask'].to(device)
-            
+            images, masks = tuple_partitions(batch['image'], batch['mask'])
+            images = images.to(device)
+            masks = masks.to(device)
+
             with torch.no_grad():
-                logits = model(image)
+                logits = model(images)
             
             probs = torch.sigmoid(logits)
-            prediction = (probs > 0.5).long().cpu().numpy()
-            mask = mask.cpu().numpy()
+            predictions = (probs > 0.5).long().cpu().numpy()
+            masks = masks.cpu().numpy()
             
-            all_predictions.extend(prediction)
-            all_masks.extend(mask)
+            predictions, masks = tuple_unpartitions(predictions, masks)
+            all_predictions.extend(predictions)
+            all_masks.extend(masks)
             
             pb.update()
     
@@ -92,7 +96,7 @@ def main(folder_dir, checkpoint_dir):
     model.to(device)
     optimizer = AdamW(model.parameters(), lr=2e-3)
     scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=5)
-
+    criterion = nn.BCEWithLogitsLoss() 
 
     epoch = 0
     allowed_patience = 5
@@ -103,7 +107,7 @@ def main(folder_dir, checkpoint_dir):
     
     # Training model
     while not exit_train :
-        train_loss = train_model(epoch, model, train_loader, optimizer, device)
+        train_loss = train_model(epoch, model, train_loader, optimizer, device, criterion)
         scores = evaluate_model(epoch, model, eval_loader, device)
         print(f"Epoch {epoch}: IOU = {scores['iou']}, Dice = {scores['dice']}, Train Loss = {train_loss:.4f}")
         
@@ -139,6 +143,6 @@ def main(folder_dir, checkpoint_dir):
     
 if __name__ == "__main__":
     main(
-        folder_dir='/home/huatansang/Documents/retinal-vessel-segmentation/Dataset/hrf',
-        checkpoint_dir='/home/huatansang/Documents/retinal-vessel-segmentation/taod_cfnet/checkpoint'
+        folder_dir='/home/huatansang/Documents/Research/retinal-vessel-segmentation/Dataset/hrf',
+        checkpoint_dir='/home/huatansang/Documents/Research/retinal-vessel-segmentation/taod_cfnet/checkpoint'
     )
