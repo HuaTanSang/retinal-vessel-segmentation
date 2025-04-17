@@ -3,38 +3,37 @@ import os
 from torchvision import transforms
 from PIL import Image
 import glob
+import torchvision.transforms.functional as TF
+import cv2 
 
-class HRF_Dataset(Dataset): 
-    def __init__(self, root_folder): 
-        self.root_folder = root_folder 
+class HRF_Dataset(Dataset):
+    def __init__(self, root_folder):
+        self.root_folder = root_folder
 
         self.images = sorted(
-            glob.glob(os.path.join(self.root_folder, 'images/**.jpg')) +
-            glob.glob(os.path.join(self.root_folder, 'images/**.JPG'))
+            glob.glob(os.path.join(self.root_folder, 'images', '**.jpg')) +
+            glob.glob(os.path.join(self.root_folder, 'images', '**.JPG'))
         )
         self.masks = sorted(
-            glob.glob(os.path.join(root_folder, 'manual1/**.tif'))
+            glob.glob(os.path.join(root_folder, 'manual1', '**.tif'))
         )
 
-        assert len(self.images) == len(self.masks), "Number of masks and images mis-match!"
+        assert len(self.images) == len(self.masks), "Number of mask and image mis-match!"
 
-        self.transforms_img = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Resize((224, 224))
-        ])
-        self.transforms_masks = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Resize((224, 224),interpolation=transforms.InterpolationMode.NEAREST)
-        ])
-
-    def __len__(self): 
+    def __len__(self):
         return len(self.images)
-    
+
     def __getitem__(self, index):
-        image = self.transforms_img(Image.open(self.images[index]).convert('RGB'))
-        mask = self.transforms_masks(Image.open(self.masks[index]).convert('L'))
-        
+        image = cv2.imread(self.images[index])
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        mask = cv2.imread(self.masks[index], cv2.IMREAD_GRAYSCALE)
+
+        image = TF.to_tensor(image)  
+        image = image.repeat(3, 1, 1)
+
+        mask = TF.to_tensor(mask)
+
         return {
-            "image" : image, 
-            "mask" : mask
+            "image": image,
+            "mask": mask
         }
