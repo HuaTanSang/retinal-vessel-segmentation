@@ -3,17 +3,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from helper_function import compute_partial 
 
-class VGGBlock(nn.Module): 
+class VGGBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(VGGBlock, self).__init__()
         self.conv = nn.Sequential(
-            nn.Conv2d(in_channels, in_channels, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels, in_channels * 2, kernel_size=3, padding=1), 
-            nn.ReLU(inplace=True), 
-            nn.Conv2d(in_channels * 2, out_channels, kernel_size=1, padding=0), 
-            nn.ReLU(inplace=True),  
-            nn.Conv2d(out_channels, out_channels, kernel_size=1, padding=0),
+            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
             nn.ReLU(inplace=True)
         )
 
@@ -24,13 +18,11 @@ class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(ResidualBlock, self).__init__()
         self.main = VGGBlock(in_channels, out_channels)
-        self.shortcut = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=1, padding=0),
-            nn.ReLU(inplace=True)
-        )
+        self.shortcut = nn.Conv2d(in_channels, out_channels, kernel_size=1, padding=0)  # Không cần ReLU
 
     def forward(self, x):
         return self.main(x) + self.shortcut(x)
+
 
 class CFB(nn.Module):
     def __init__(self, in_channels, out_channels):

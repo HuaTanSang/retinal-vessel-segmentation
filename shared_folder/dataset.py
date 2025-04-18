@@ -29,11 +29,9 @@ class HRF_Dataset(Dataset):
         return len(self.images)
 
     def __getitem__(self, index):
-        # Đọc ảnh
         image = Image.open(self.images[index]).convert('RGB')  # Đảm bảo ảnh là RGB
-        # Chuyển sang grayscale
-        image = image.convert('L')  # Grayscale
-        # Resize ảnh về (width=224, height=144)
+        image = image.convert('L')  
+        # (width=224, height=144)
         image = image.resize((224, 144), Image.BICUBIC)
         
         # Đọc mask
