@@ -22,7 +22,7 @@ import torch.nn as nn
 import torch
 torch.cuda.empty_cache()
 
-def train_model(epoch: int, model: nn.Module, dataloader: DataLoader, optim: torch.optim.Optimizer, device: torch.device, criterion: nn.BCEWithLogitsLoss):
+def train_model(epoch: int, model: nn.Module, dataloader: DataLoader, optim: torch.optim.Optimizer, device: torch.device, criterion: Dice_Loss):
     model.train()
     running_loss = .0
     with tqdm(desc=f'Epoch {epoch} - Training', unit='it', total=len(dataloader)) as pb:

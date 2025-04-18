@@ -40,7 +40,7 @@ class HRF_Dataset(Dataset):
         mask = mask.resize((224, 144), Image.BICUBIC)
         
         # Chuyển thành tensor
-        image = TF.to_tensor(image) * 255  # shape (1, 224, 144), giá trị [0, 255]
+        image = TF.to_tensor(image)   # shape (1, 224, 144), giá trị [0, 255]
         image = image.repeat(3, 1, 1)  # shape (3, 224, 144)
         mask = TF.to_tensor(mask)  # shape (1, 224, 144)
         
