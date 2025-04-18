@@ -24,7 +24,8 @@ def train_model(epoch: int, model: nn.Module, dataloader: DataLoader, optim: tor
     running_loss = .0
     with tqdm(desc=f'Epoch {epoch} - Training', unit='it', total=len(dataloader)) as pb:
         for it, batch in enumerate(dataloader):
-            images, masks = tuple_partitions(batch['image'], batch['mask'])
+            images, masks = batch['image'], batch['mask']
+
             images = images.to(device)
             masks = masks.to(device)
             
@@ -50,7 +51,8 @@ def evaluate_model(epoch: int, model: nn.Module, dataloader: DataLoader, device:
     
     with tqdm(desc=f'Epoch {epoch} - Evaluating', unit='it', total=len(dataloader)) as pb:
         for batch in dataloader:
-            images, masks = tuple_partitions(batch['image'], batch['mask'])
+            images, masks = batch['image'], batch['mask']
+
             images = images.to(device)
             masks = masks.to(device)
 
@@ -86,9 +88,16 @@ def main(folder_dir, checkpoint_dir):
     train_dataset = torch.utils.data.Subset(data, train_indices)
     val_dataset = torch.utils.data.Subset(data, val_indices)
     
-    train_loader = DataLoader(train_dataset, batch_size=3, shuffle=True)
+
+    train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
     eval_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     
+    # for batch in train_loader: 
+    #     image = batch['image']
+    #     print(image.shape)
+    #     raise 
+
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     # Define model
@@ -143,6 +152,6 @@ def main(folder_dir, checkpoint_dir):
     
 if __name__ == "__main__":
     main(
-        folder_dir='/home/huatansang/Documents/Research/retinal-vessel-segmentation/Dataset/hrf',
+        folder_dir='/home/huatansang/Documents/Research/retinal-vessel-segmentation/Dataset/preprocessed_hrf',
         checkpoint_dir='/home/huatansang/Documents/Research/retinal-vessel-segmentation/taod_cfnet/checkpoint'
     )

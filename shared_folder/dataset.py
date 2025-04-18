@@ -13,7 +13,8 @@ class HRF_Dataset(Dataset):
             glob.glob(os.path.join(self.root_folder, 'images', '**.JPG'))
         )
         self.masks = sorted(
-            glob.glob(os.path.join(root_folder, 'manual1', '**.tif'))
+            glob.glob(os.path.join(root_folder, 'manual1', '**.jpg')) + 
+            glob.glob(os.path.join(self.root_folder, 'manual1', '**.tif'))
         )
 
         assert len(self.images) == len(self.masks), "Number of mask and image mis-match!"
@@ -24,9 +25,11 @@ class HRF_Dataset(Dataset):
     def __getitem__(self, index):
         image = cv2.imread(self.images[index])
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = cv2.resize((144, 256))
         mask = cv2.imread(self.masks[index], cv2.IMREAD_GRAYSCALE)
+        mask = cv2.resize((144, 256))
 
-        image = TF.to_tensor(image)  
+        image = TF.to_tensor(image)*255
         image = image.repeat(3, 1, 1)
         mask = TF.to_tensor(mask)
 
