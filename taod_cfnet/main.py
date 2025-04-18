@@ -1,3 +1,6 @@
+import sys
+sys.path.append("/home/huatansang/Documents/Research/retinal-vessel-segmentation")
+
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from shared_folder.compute_score import *
