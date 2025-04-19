@@ -1,12 +1,7 @@
-# import cv2 
-# import os
-# import glob
-# import torchvision.transforms.functional as TF
-# from torch.utils.data import Dataset
-
 import os
 import glob
 from PIL import Image
+import torch
 import torchvision.transforms.functional as TF
 from torch.utils.data import Dataset
 
@@ -29,21 +24,23 @@ class HRF_Dataset(Dataset):
         return len(self.images)
 
     def __getitem__(self, index):
+        # Load và xử lý image
         image = Image.open(self.images[index]).convert('RGB')  # Đảm bảo ảnh là RGB
-        image = image.convert('L')  
-        # (width=224, height=144)
-        image = image.resize((224, 144), Image.BICUBIC)
+        image = image.convert('L')  # Chuyển sang grayscale
+        image = image.resize((224, 144), Image.BICUBIC)  # Resize
         
-        # Đọc mask
+        # Load và xử lý mask
         mask = Image.open(self.masks[index]).convert('L')  # Grayscale
-        # Resize mask về (width=224, height=144)
-        mask = mask.resize((224, 144), Image.BICUBIC)
+        mask = mask.resize((224, 144), Image.NEAREST)  # Resize
         
         # Chuyển thành tensor
-        image = TF.to_tensor(image)   # shape (1, 224, 144), giá trị [0, 255]
-        image = image.repeat(3, 1, 1)  # shape (3, 224, 144)
-        mask = TF.to_tensor(mask)  # shape (1, 224, 144)
+        image = TF.to_tensor(image)  # Shape: (1, 224, 144), giá trị [0, 1]
+        image = image.repeat(3, 1, 1)  # Shape: (3, 224, 144)
+        mask = TF.to_tensor(mask)  # Shape: (1, 224, 144), giá trị [0, 1]
         
+        # Binarize mask: giá trị > 0 thành 1, giá trị = 0 giữ nguyên
+        mask = (mask > 0.0).float()  # Shape: (1, 224, 144), giá trị {0.0, 1.0}
+
         return {
             "image": image,
             "mask": mask

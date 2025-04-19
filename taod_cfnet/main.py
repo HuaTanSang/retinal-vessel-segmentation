@@ -66,7 +66,6 @@ def evaluate_model(epoch: int, model: nn.Module, dataloader: DataLoader, device:
             predictions = (probs > 0.5).long().cpu().numpy()
             masks = masks.cpu().numpy()
             
-            predictions, masks = tuple_unpartitions(predictions, masks)
             all_predictions.extend(predictions)
             all_masks.extend(masks)
             
@@ -79,6 +78,21 @@ def save_checkpoint(dict_to_save: dict, checkpoint_dir: str):
     os.makedirs(checkpoint_dir, exist_ok=True)
     torch.save(dict_to_save, os.path.join(checkpoint_dir, "last_model.pth"))
 
+def compute_pos_weight(dataset, device):
+    loader = DataLoader(dataset, batch_size=1, shuffle=False)
+    total_pos = 0.0
+    total_neg = 0.0
+
+    for batch in loader:
+        mask = batch['mask'].to(device)          # shape (1,1,H,W), giá trị 0.0 hoặc 1.0
+        total_pos += mask.sum().item()           # cộng tất cả pixel =1
+        total_neg += (1.0 - mask).sum().item()    # pixel =0 là 1-mask
+
+    # tránh chia cho 0
+    if total_pos == 0:
+        raise ValueError("Không tìm thấy pixel positive nào trong dataset!")
+    pos_weight = torch.tensor([total_neg / total_pos], device=device)
+    return pos_weight
 
 
 def main(folder_dir, checkpoint_dir):
@@ -102,13 +116,14 @@ def main(folder_dir, checkpoint_dir):
 
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+    pos_weight = compute_pos_weight(train_dataset, device)
+
     # Define model
     model = TAOD_CFNet(3, 1)
     model.to(device)
     optimizer = AdamW(model.parameters(), lr=2e-3)
     scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=5)
-    criterion = nn.BCEWithLogitsLoss() 
+    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight) 
 
     epoch = 0
     allowed_patience = 5

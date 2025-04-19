@@ -13,58 +13,52 @@ class TAOD_CFNet(nn.Module):
         # self.odga = ODGA() 
 
         # Encoder 
-        self.cfb0_0 = CFB(self.in_channels, 64)
-        self.tam1 = TrumpetAttention(64)
+        self.cfb0_0 = CFB(self.in_channels, 4)
+        self.tam1 = TrumpetAttention(4)
         self.maxpool0 = nn.MaxPool2d(kernel_size=2)
 
-        self.cfb0_1 = CFB(64, 128)
-        self.tam2 = TrumpetAttention(128)
+        self.cfb0_1 = CFB(4, 8)
+        self.tam2 = TrumpetAttention(8)
         self.maxpool1 = nn.MaxPool2d(kernel_size=2)
 
-        self.cfb0_2 = CFB(128, 256)
-        self.tam3 = TrumpetAttention(256)
+        self.cfb0_2 = CFB(8, 16)
+        self.tam3 = TrumpetAttention(16)
         self.maxpool3 = nn.MaxPool2d(kernel_size=2)
 
-        self.cfb0_3 = CFB(256, 512)
-        self.tam4 = TrumpetAttention(512)
+        self.cfb0_3 = CFB(16, 32)
+        self.tam4 = TrumpetAttention(32)
         self.maxpool4 = nn.MaxPool2d(kernel_size=2)
 
-        self.cfb0_4 = CFB(512, 1024)
-        self.cfb0_5 = CFB(1024, 1024)
+        self.cfb0_4 = CFB(32, 64)
+        self.cfb0_5 = CFB(64, 64)
 
         # Decoder: Cat the TAM before conduct the CFB
-        self.cfb1_0 = CFB(1024, 1024)
+        self.cfb1_0 = CFB(64, 64)
         self.up1 = nn.Sequential(
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
-            nn.Conv2d(1024, 512, kernel_size=1)
+            nn.Conv2d(64, 32, kernel_size=1)
         )
 
-        self.cfb1_1 = CFB(1024, 512)
+        self.cfb1_1 = CFB(64, 32)
         self.up2 = nn.Sequential(
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
-            nn.Conv2d(512, 256, kernel_size=1)
+            nn.Conv2d(32, 16, kernel_size=1)
         )
 
-        self.cfb1_1 = CFB(1024, 512)
-        self.up2 = nn.Sequential(
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
-            nn.Conv2d(512, 256, kernel_size=1)
-        )
-
-        self.cfb1_2 = CFB(512, 256)
+        self.cfb1_2 = CFB(32, 16)
         self.up3 = nn.Sequential(
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
-            nn.Conv2d(256, 128, kernel_size=1)
+            nn.Conv2d(16, 8, kernel_size=1)
         )
 
-        self.cfb1_3 = CFB(256, 128)
+        self.cfb1_3 = CFB(16, 8)
         self.up4 = nn.Sequential(
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
-            nn.Conv2d(128, 64, kernel_size=1)
+            nn.Conv2d(8, 4, kernel_size=1)
         )
 
-        self.cfb1_4 = CFB(128, 64)
-        self.out_conv = nn.Conv2d(64, self.out_channels, kernel_size=1) 
+        self.cfb1_4 = CFB(8, 4)
+        self.out_conv = nn.Conv2d(4, self.out_channels, kernel_size=1) 
 
 
 
