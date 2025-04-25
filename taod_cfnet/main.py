@@ -136,7 +136,7 @@ def main(folder_dir, checkpoint_dir):
     while not exit_train :
         train_loss = train_model(epoch, model, train_loader, optimizer, device, criterion)
         scores = evaluate_model(epoch, model, eval_loader, device)
-        print(f"Epoch {epoch}: IOU = {scores['iou']}, Dice = {scores['dice']}, Train Loss = {train_loss:.4f}")
+        print(f"Epoch {epoch}: IOU = {scores['iou']}, Dice = {scores['dice']}, F1 = {scores['f1']},  Jaccard = {scores['jaccard']}, Precision = {scores['precision']}, Recall = {scores['recall']} Train Loss = {train_loss:.4f}")
         
         score = scores[compared_score]
         scheduler.step(score)  # Cập nhật learning rate dựa trên Dice Score
@@ -170,6 +170,6 @@ def main(folder_dir, checkpoint_dir):
     
 if __name__ == "__main__":
     main(
-        folder_dir='/home/huatansang/Documents/Research/retinal-vessel-segmentation/Dataset/preprocessed_hrf',
+        folder_dir='/home/huatansang/Documents/Research/retinal-vessel-segmentation/Dataset/hrf',
         checkpoint_dir='/home/huatansang/Documents/Research/retinal-vessel-segmentation/taod_cfnet/checkpoint'
     )

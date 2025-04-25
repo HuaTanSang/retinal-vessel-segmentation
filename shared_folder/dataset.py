@@ -26,7 +26,7 @@ class HRF_Dataset(Dataset):
     def __getitem__(self, index):
         # Load và xử lý image
         image = Image.open(self.images[index]).convert('RGB')  # Đảm bảo ảnh là RGB
-        image = image.convert('L')  # Chuyển sang grayscale
+        # image = image.convert('L')  # Chuyển sang grayscale
         image = image.resize((224, 144), Image.BICUBIC)  # Resize
         
         # Load và xử lý mask
@@ -35,7 +35,7 @@ class HRF_Dataset(Dataset):
         
         # Chuyển thành tensor
         image = TF.to_tensor(image)  # Shape: (1, 224, 144), giá trị [0, 1]
-        image = image.repeat(3, 1, 1)  # Shape: (3, 224, 144)
+        # image = image.repeat(3, 1, 1)  # Shape: (3, 224, 144)
         mask = TF.to_tensor(mask)  # Shape: (1, 224, 144), giá trị [0, 1]
         
         # Binarize mask: giá trị > 0 thành 1, giá trị = 0 giữ nguyên
