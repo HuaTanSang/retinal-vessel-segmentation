@@ -34,12 +34,12 @@ class HRF_Dataset(Dataset):
         # mask = mask.resize((224, 144), Image.NEAREST)  # Resize
         
         # Chuyển thành tensor
-        image = TF.to_tensor(image)  # Shape: (1, 224, 144), giá trị [0, 1]
+        image = TF.to_tensor(image)*255  # Shape: (1, 224, 144), giá trị [0, 1]
         # image = image.repeat(3, 1, 1)  # Shape: (3, 224, 144)
-        mask = TF.to_tensor(mask)  # Shape: (1, 224, 144), giá trị [0, 1]
+        mask = TF.to_tensor(mask)*255  # Shape: (1, 224, 144), giá trị [0, 1]
         
         # Binarize mask: giá trị > 0 thành 1, giá trị = 0 giữ nguyên
-        mask = (mask > 0.0).float()  # Shape: (1, 224, 144), giá trị {0.0, 1.0}
+        # mask = (mask > 0.0).float()  # Shape: (1, 224, 144), giá trị {0.0, 1.0}
 
         return {
             "image": image,

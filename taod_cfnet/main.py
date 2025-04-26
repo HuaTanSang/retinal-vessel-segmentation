@@ -78,22 +78,6 @@ def save_checkpoint(dict_to_save: dict, checkpoint_dir: str):
     os.makedirs(checkpoint_dir, exist_ok=True)
     torch.save(dict_to_save, os.path.join(checkpoint_dir, "last_model.pth"))
 
-def compute_pos_weight(dataset, device):
-    loader = DataLoader(dataset, batch_size=1, shuffle=False)
-    total_pos = 0.0
-    total_neg = 0.0
-
-    for batch in loader:
-        mask = batch['mask'].to(device)          # shape (1,1,H,W), giá trị 0.0 hoặc 1.0
-        total_pos += mask.sum().item()           # cộng tất cả pixel =1
-        total_neg += (1.0 - mask).sum().item()    # pixel =0 là 1-mask
-
-    # tránh chia cho 0
-    if total_pos == 0:
-        raise ValueError("Không tìm thấy pixel positive nào trong dataset!")
-    pos_weight = torch.tensor([total_neg / total_pos], device=device)
-    return pos_weight
-
 
 def main(folder_dir, checkpoint_dir):
     set_seed(33)
