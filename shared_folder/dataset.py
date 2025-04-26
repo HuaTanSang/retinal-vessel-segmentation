@@ -27,11 +27,11 @@ class HRF_Dataset(Dataset):
         # Load và xử lý image
         image = Image.open(self.images[index]).convert('RGB')  # Đảm bảo ảnh là RGB
         # image = image.convert('L')  # Chuyển sang grayscale
-        image = image.resize((224, 144), Image.BICUBIC)  # Resize
+        # image = image.resize((224, 144), Image.BICUBIC)  # Resize
         
         # Load và xử lý mask
         mask = Image.open(self.masks[index]).convert('L')  # Grayscale
-        mask = mask.resize((224, 144), Image.NEAREST)  # Resize
+        # mask = mask.resize((224, 144), Image.NEAREST)  # Resize
         
         # Chuyển thành tensor
         image = TF.to_tensor(image)  # Shape: (1, 224, 144), giá trị [0, 1]

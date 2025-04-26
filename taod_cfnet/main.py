@@ -122,8 +122,8 @@ def main(folder_dir, checkpoint_dir):
     model = TAOD_CFNet(3, 1)
     model.to(device)
     optimizer = AdamW(model.parameters(), lr=2e-3)
-    scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=5)
-    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight) 
+    # scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=5)
+    criterion = Dice_Loss() 
 
     epoch = 0
     allowed_patience = 5
@@ -136,10 +136,10 @@ def main(folder_dir, checkpoint_dir):
     while not exit_train :
         train_loss = train_model(epoch, model, train_loader, optimizer, device, criterion)
         scores = evaluate_model(epoch, model, eval_loader, device)
-        print(f"Epoch {epoch}: IOU = {scores['iou']}, Dice = {scores['dice']}, F1 = {scores['f1']},  Jaccard = {scores['jaccard']}, Precision = {scores['precision']}, Recall = {scores['recall']} Train Loss = {train_loss:.4f}")
+        print(f"Epoch {epoch}: IOU = {scores['iou']}, Dice = {scores['dice']}, F1 = {scores['f1']}, Jaccard = {scores['jaccard']}, Precision = {scores['precision']}, Recall = {scores['recall']}, Train Loss = {train_loss:.4f}")
         
         score = scores[compared_score]
-        scheduler.step(score)  # Cập nhật learning rate dựa trên Dice Score
+        # scheduler.step(score)  # Cập nhật learning rate dựa trên Dice Score
         
         is_best_model = False
         if score > best_score:

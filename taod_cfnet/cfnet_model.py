@@ -10,7 +10,7 @@ class TAOD_CFNet(nn.Module):
         super(TAOD_CFNet, self).__init__() 
         self.in_channels = in_channels
         self.out_channels = out_channels
-        # self.odga = ODGA() 
+        self.odga = ODGA() 
 
         # Encoder 
         self.cfb0_0 = CFB(self.in_channels, 4)
@@ -63,7 +63,7 @@ class TAOD_CFNet(nn.Module):
 
 
     def forward(self, x): 
-        # x = self.odga(x)
+        x = self.odga(x)
 
         # ======== Encoder ========
         x0 = self.cfb0_0(x)  # 64
