@@ -80,7 +80,7 @@ def save_checkpoint(dict_to_save: dict, checkpoint_dir: str):
 
 
 def main(folder_dir, checkpoint_dir):
-    set_seed(33)
+    # set_seed(33)
     
     # Load data
     data = HRF_Dataset(folder_dir)

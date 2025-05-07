@@ -10,10 +10,12 @@ class HRF_Dataset(Dataset):
     def __init__(self, root_folder):
         self.root_folder = root_folder
         self.img_transforms = transforms.Compose([
-            transforms.ToTensor() 
+            transforms.ToTensor(), 
+            transforms.Resize((512, 512))
         ])
         self.mask_transform = transforms.Compose([
-            transforms.ToTensor() 
+            transforms.ToTensor(), 
+            transforms.Resize((512, 512))
         ])
 
         self.images = sorted(
@@ -39,6 +41,6 @@ class HRF_Dataset(Dataset):
 
         return {
             'image': image*255, 
-            'mask': mask*255 
+            'mask': mask 
         }
 
