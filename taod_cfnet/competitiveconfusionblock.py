@@ -10,7 +10,7 @@ class VGGBlock(nn.Module):
             nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
             nn.ReLU(inplace=True)
         )
-
+        
     def forward(self, x):
         return self.conv(x)
 
@@ -19,9 +19,10 @@ class ResidualBlock(nn.Module):
         super(ResidualBlock, self).__init__()
         self.main = VGGBlock(in_channels, out_channels)
         self.shortcut = nn.Conv2d(in_channels, out_channels, kernel_size=1, padding=0)  # Không cần ReLU
+        self.relu = nn.ReLU() 
 
     def forward(self, x):
-        return self.main(x) + self.shortcut(x)
+        return self.relu(self.main(x) + self.shortcut(x)) 
 
 
 class CFB(nn.Module):
@@ -42,7 +43,7 @@ class CFB(nn.Module):
 
         # Initial fusion
         C = (V + R) / 2
-
+        
         # Activation
         M1 = self.omega * (torch.sigmoid(V) + F.relu(R))
         M2 = F.relu(R)
@@ -63,4 +64,4 @@ class CFB(nn.Module):
 
         # Final output
         out = torch.where(M1 > partial, beta * M3 * C * M2, M3 * C * M2)
-        return out
+        return C 
