@@ -63,14 +63,14 @@ def evaluate_model(epoch: int, model: nn.Module, dataloader: DataLoader, device:
                 logits = model(images)
             
             probs = torch.sigmoid(logits)
-            predictions = (probs > 0.5).long().cpu().numpy()
+            predictions = (probs > 0.7).long().cpu().numpy()
             masks = masks.cpu().numpy()
             
             all_predictions.extend(predictions)
             all_masks.extend(masks)
             
             pb.update()
-    
+
     scores = compute_scores(all_predictions, all_masks)
     return scores
 
@@ -100,19 +100,19 @@ def main(folder_dir, checkpoint_dir):
 
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    pos_weight = compute_pos_weight(train_dataset, device)
+    # pos_weight = compute_pos_weight(train_dataset, device)
 
     # Define model
     model = TAOD_CFNet(3, 1)
     model.to(device)
-    optimizer = AdamW(model.parameters(), lr=2e-3)
+    optimizer = AdamW(model.parameters(), lr=1e-3)
     # scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=5)
-    criterion = Dice_Loss() 
+    criterion = Dice_Loss()
 
     epoch = 0
     allowed_patience = 5
     best_score = 0
-    compared_score = "dice"
+    compared_score = "iou"
     patience = 0
     exit_train = False
     

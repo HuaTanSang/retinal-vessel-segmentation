@@ -1,8 +1,7 @@
 import os
 import glob
+import torch 
 from PIL import Image
-import torch
-import torchvision.transforms.functional as TF
 from torch.utils.data import Dataset
 from torchvision import transforms 
 
@@ -11,11 +10,13 @@ class HRF_Dataset(Dataset):
         self.root_folder = root_folder
         self.img_transforms = transforms.Compose([
             transforms.ToTensor(), 
-            transforms.Resize((512, 512))
+            transforms.Resize((512, 512), interpolation=transforms.InterpolationMode.NEAREST), 
+            # transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
         ])
         self.mask_transform = transforms.Compose([
             transforms.ToTensor(), 
-            transforms.Resize((512, 512))
+            transforms.Resize((512, 512), interpolation=transforms.InterpolationMode.NEAREST), 
+            # transforms.Normalize(mean=0.5, std=0.5)
         ])
 
         self.images = sorted(
@@ -36,7 +37,7 @@ class HRF_Dataset(Dataset):
         image = Image.open(self.images[index])
         mask = Image.open(self.masks[index])
 
-        image = self.img_transforms(img=image) 
+        image = self.img_transforms(img=image)
         mask = self.mask_transform(img=mask) 
 
         return {

@@ -3,15 +3,22 @@ import torch.nn as nn
 import torch.nn.functional as F 
 from torch.utils.data import DataLoader 
 
-class Dice_Loss(nn.Module): 
-    def __init__(self, smooth=1e-6): 
-        super(Dice_Loss, self).__init__() 
-        self.smooth = smooth 
+class Dice_Loss(nn.Module):
+    def __init__(self, smooth=1e-6):
+        super(Dice_Loss, self).__init__()
+        self.smooth = smooth
 
     def forward(self, logits, target):
-        logits = torch.sigmoid(logits)  
-        intersection = (logits * target).sum(dim=(2,3))  
-        union = logits.sum(dim=(2,3)) + target.sum(dim=(2,3))  
+        # Ánh xạ logits về xác suất [0, 1]
+        probs = torch.sigmoid(logits)
+
+        # Flatten từng ảnh (batch_size, H*W)
+        probs = probs.view(probs.size(0), -1)
+        target = target.view(target.size(0), -1)
+
+        # Tính Dice coefficient
+        intersection = (probs * target).sum(dim=1)
+        union = probs.sum(dim=1) + target.sum(dim=1)
         dice = (2. * intersection + self.smooth) / (union + self.smooth)
 
         return 1 - dice.mean()
@@ -58,6 +65,52 @@ class GeneralizedFocalLoss(nn.Module):
 
 
 
+class FocalLoss(nn.Module):
+    """
+    Focal Loss for binary or multi-class classification.
+
+    Parameters:
+    - alpha: balancing factor (float or tensor). If float, applies to class 1 only (binary).
+    - gamma: focusing parameter (default: 2.0).
+    - reduction: 'mean', 'sum', or 'none'.
+    """
+
+    def __init__(self, alpha=0.25, gamma=2.0, reduction='mean'):
+        super(FocalLoss, self).__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.reduction = reduction
+
+    def forward(self, inputs, targets):
+        """
+        Args:
+        - inputs: model outputs (logits), shape: (N, C) or (N,) for binary
+        - targets: ground truth labels, shape: (N,) or (N, 1)
+        """
+        if inputs.dim() > 1 and inputs.size(1) > 1:
+            # Multi-class case
+            logpt = F.log_softmax(inputs, dim=1)
+            pt = torch.exp(logpt)
+            logpt = logpt.gather(1, targets.unsqueeze(1)).squeeze(1)
+            pt = pt.gather(1, targets.unsqueeze(1)).squeeze(1)
+        else:
+            # Binary case
+            inputs = inputs.view(-1)
+            targets = targets.view(-1)
+            logpt = F.binary_cross_entropy_with_logits(inputs, targets.float(), reduction='none')
+            pt = torch.exp(-logpt)
+
+        alpha_t = self.alpha if isinstance(self.alpha, float) else self.alpha[targets]
+        loss = -alpha_t * ((1 - pt) ** self.gamma) * logpt
+
+        if self.reduction == 'mean':
+            return loss.mean()
+        elif self.reduction == 'sum':
+            return loss.sum()
+        else:
+            return loss
+
+
 def compute_pos_weight(dataset, device):  # for BCEWithLogitsLoss 
     loader = DataLoader(dataset, batch_size=1, shuffle=False)
     total_pos = 0.0
@@ -73,3 +126,30 @@ def compute_pos_weight(dataset, device):  # for BCEWithLogitsLoss
         raise ValueError("Không tìm thấy pixel positive nào trong dataset!")
     pos_weight = torch.tensor([total_neg / total_pos], device=device)
     return pos_weight
+
+
+
+class CustomLoss(nn.Module):
+    def __init__(self, alpha):
+        super().__init__()
+        self.alpha = alpha
+        self.bce = nn.BCEWithLogitsLoss()  # dùng BCE với logits
+
+    def forward(self, logits, truth):
+        # Chuyển logits thành xác suất
+        pred = torch.sigmoid(logits)
+
+        # Flatten từng ảnh (batch_size, H*W)
+        pred_flat = pred.view(pred.size(0), -1)
+        truth_flat = truth.view(truth.size(0), -1).type(torch.float32)
+
+        # BCE Loss (sử dụng BCEWithLogitsLoss trực tiếp trên logits)
+        bce_loss = self.bce(logits.view(logits.size(0), -1), truth_flat)
+
+        # Abe Dice Loss
+        erc = torch.pow(pred_flat, 2 * (1 - (pred_flat ** 3)))
+        numerator = (2 * erc * truth_flat).sum(dim=1)
+        denominator = (erc ** 2 + truth_flat).sum(dim=1)
+        abe_dice = 1 - (numerator / (denominator + 1e-6)).mean()
+
+        return self.alpha * abe_dice + (1 - self.alpha) * bce_loss

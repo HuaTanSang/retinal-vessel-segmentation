@@ -25,12 +25,13 @@ def inference(image: torch.Tensor, mask: torch.Tensor, model: torch.nn.Module, d
         logits = model(image)
         pred = torch.sigmoid(logits)
        
-
-        pred = (pred > 0.5) # .float().cpu().numpy().squeeze() 
-        print(pred.max(), pred.min())
-        print(torch.unique(pred, return_counts=True))
-        raise 
-    image = image.squeeze(0).cpu().permute(1, 2, 0).numpy() # Convert from (C, H, W) to (H, W, C)
+        # print(pred.max(), pred.min())
+        # print(torch.unique(pred, return_counts=True))
+        pred = (pred > 0.5).float().cpu().numpy().squeeze() 
+        # print(pred.max(), pred.min())
+        # print(torch.unique(pred, return_counts=True))
+        # raise 
+    image = image.squeeze(0).cpu().permute(1, 2, 0).numpy().astype(int) # Convert from (C, H, W) to (H, W, C)
     # image = (image * 0.5) + 0.5 # Revert Normalize 
     
     mask = mask.cpu().numpy().squeeze() 

@@ -18,7 +18,7 @@ class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(ResidualBlock, self).__init__()
         self.main = VGGBlock(in_channels, out_channels)
-        self.shortcut = nn.Conv2d(in_channels, out_channels, kernel_size=1, padding=0)  # Không cần ReLU
+        self.shortcut = nn.Conv2d(in_channels, out_channels, kernel_size=1, padding=0)  
         self.relu = nn.ReLU() 
 
     def forward(self, x):
