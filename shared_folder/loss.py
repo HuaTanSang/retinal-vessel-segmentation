@@ -9,19 +9,39 @@ class Dice_Loss(nn.Module):
         self.smooth = smooth
 
     def forward(self, logits, target):
-        # Ánh xạ logits về xác suất [0, 1]
+        # logits: (B, 1, H, W), target: (B, 1, H, W)
         probs = torch.sigmoid(logits)
 
-        # Flatten từng ảnh (batch_size, H*W)
-        probs = probs.view(probs.size(0), -1)
-        target = target.view(target.size(0), -1)
+        # Tính Dice coefficient theo từng ảnh
+        intersection = (probs * target).sum(dim=(1, 2, 3))  # tổng theo H, W, C
+        union = probs.sum(dim=(1, 2, 3)) + target.sum(dim=(1, 2, 3))
 
-        # Tính Dice coefficient
-        intersection = (probs * target).sum(dim=1)
-        union = probs.sum(dim=1) + target.sum(dim=1)
         dice = (2. * intersection + self.smooth) / (union + self.smooth)
 
         return 1 - dice.mean()
+
+
+class FocalLoss(nn.Module):
+    """
+    Multi-class Focal loss implementation
+    """
+    def __init__(self, gamma=2, weight=None):
+        super(FocalLoss, self).__init__()
+        self.gamma = gamma
+        self.weight = weight
+
+    def forward(self, y_pred, y):
+        """
+        input: [N, C]
+        target: [N, 1]
+        """
+        y = y.squeeze(1)
+        log_pt = F.log_softmax(y_pred, dim=1)
+        pt = torch.exp(log_pt)
+        log_pt = (1 - pt) ** self.gamma * log_pt
+        loss = F.nll_loss(log_pt, y, self.weight)
+
+        return loss
 
 class GeneralizedFocalLoss(nn.Module):
     def __init__(self, gamma=2.0, alpha=0.25, reduction='mean'):
@@ -63,69 +83,6 @@ class GeneralizedFocalLoss(nn.Module):
         else:
             return loss
 
-
-
-class FocalLoss(nn.Module):
-    """
-    Focal Loss for binary or multi-class classification.
-
-    Parameters:
-    - alpha: balancing factor (float or tensor). If float, applies to class 1 only (binary).
-    - gamma: focusing parameter (default: 2.0).
-    - reduction: 'mean', 'sum', or 'none'.
-    """
-
-    def __init__(self, alpha=0.25, gamma=2.0, reduction='mean'):
-        super(FocalLoss, self).__init__()
-        self.alpha = alpha
-        self.gamma = gamma
-        self.reduction = reduction
-
-    def forward(self, inputs, targets):
-        """
-        Args:
-        - inputs: model outputs (logits), shape: (N, C) or (N,) for binary
-        - targets: ground truth labels, shape: (N,) or (N, 1)
-        """
-        if inputs.dim() > 1 and inputs.size(1) > 1:
-            # Multi-class case
-            logpt = F.log_softmax(inputs, dim=1)
-            pt = torch.exp(logpt)
-            logpt = logpt.gather(1, targets.unsqueeze(1)).squeeze(1)
-            pt = pt.gather(1, targets.unsqueeze(1)).squeeze(1)
-        else:
-            # Binary case
-            inputs = inputs.view(-1)
-            targets = targets.view(-1)
-            logpt = F.binary_cross_entropy_with_logits(inputs, targets.float(), reduction='none')
-            pt = torch.exp(-logpt)
-
-        alpha_t = self.alpha if isinstance(self.alpha, float) else self.alpha[targets]
-        loss = -alpha_t * ((1 - pt) ** self.gamma) * logpt
-
-        if self.reduction == 'mean':
-            return loss.mean()
-        elif self.reduction == 'sum':
-            return loss.sum()
-        else:
-            return loss
-
-
-def compute_pos_weight(dataset, device):  # for BCEWithLogitsLoss 
-    loader = DataLoader(dataset, batch_size=1, shuffle=False)
-    total_pos = 0.0
-    total_neg = 0.0
-
-    for batch in loader:
-        mask = batch['mask'].to(device)          # shape (1,1,H,W), giá trị 0.0 hoặc 1.0
-        total_pos += mask.sum().item()           # cộng tất cả pixel =1
-        total_neg += (1.0 - mask).sum().item()    # pixel =0 là 1-mask
-
-    # tránh chia cho 0
-    if total_pos == 0:
-        raise ValueError("Không tìm thấy pixel positive nào trong dataset!")
-    pos_weight = torch.tensor([total_neg / total_pos], device=device)
-    return pos_weight
 
 
 
