@@ -1,5 +1,5 @@
 import sys
-sys.path.append("/home/huatansang/Documents/Research/retinal-vessel-segmentation")
+sys.path.append("/home/huatansang/Documents/Research")
 
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -107,7 +107,7 @@ def main(folder_dir, checkpoint_dir):
     model.to(device)
     optimizer = AdamW(model.parameters(), lr=1e-3)
     # scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=5)
-    criterion = Dice_Loss()
+    criterion = Dice_Loss(0.01)
 
     epoch = 0
     allowed_patience = 5
@@ -133,7 +133,7 @@ def main(folder_dir, checkpoint_dir):
         else:
             patience += 1
         
-        if patience == allowed_patience or epoch == 30:
+        if  epoch == 30:
             exit_train = True
         
         save_checkpoint({
@@ -154,6 +154,6 @@ def main(folder_dir, checkpoint_dir):
     
 if __name__ == "__main__":
     main(
-        folder_dir='/home/huatansang/Documents/Research/retinal-vessel-segmentation/Dataset/hrf',
-        checkpoint_dir='/home/huatansang/Documents/Research/retinal-vessel-segmentation/taod_cfnet/checkpoint'
+        folder_dir='/home/huatansang/Documents/Research/Dataset/hrf',
+        checkpoint_dir='/home/huatansang/Documents/Research/taod_cfnet/checkpoint'
     )
