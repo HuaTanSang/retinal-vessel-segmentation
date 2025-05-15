@@ -8,7 +8,7 @@ class VGGBlock(nn.Module):
         super(VGGBlock, self).__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True)
+            # nn.MaxPool2d(kernel_size=3, stride=2)
         )
         
     def forward(self, x):

@@ -63,7 +63,7 @@ def evaluate_model(epoch: int, model: nn.Module, dataloader: DataLoader, device:
                 logits = model(images)
             
             probs = torch.sigmoid(logits)
-            predictions = (probs > 0.7).long().cpu().numpy()
+            predictions = (probs > 0.5).long().cpu().numpy()
             masks = masks.cpu().numpy()
             
             all_predictions.extend(predictions)

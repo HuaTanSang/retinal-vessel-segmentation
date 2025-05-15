@@ -64,7 +64,7 @@ class TAOD_CFNet(nn.Module):
 
 
     def forward(self, x): 
-        x = self.odga(x)
+        # x = self.odga(x)
         # print("x")
         # print(torch.unique(x, return_counts=True))
         # ======== Encoder ========
