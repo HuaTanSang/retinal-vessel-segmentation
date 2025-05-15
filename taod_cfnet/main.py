@@ -80,7 +80,7 @@ def save_checkpoint(dict_to_save: dict, checkpoint_dir: str):
 
 
 def main(folder_dir, checkpoint_dir):
-    # set_seed(33)
+    set_seed(42)
     
     # Load data
     data = HRF_Dataset(folder_dir)
@@ -107,7 +107,7 @@ def main(folder_dir, checkpoint_dir):
     model.to(device)
     optimizer = AdamW(model.parameters(), lr=1e-3)
     # scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=5)
-    criterion = Dice_Loss(0.01)
+    criterion = CustomLoss(alpha=0.9)
 
     epoch = 0
     allowed_patience = 5
